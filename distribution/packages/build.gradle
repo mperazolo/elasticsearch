@@ -105,25 +105,10 @@ Closure commonPackageConfig(String type, boolean oss, boolean jdk, String archit
     }
     dependsOn "process${oss ? 'Oss' : ''}${jdk ? '' : 'NoJdk'}${type.capitalize()}Files"
     packageName "elasticsearch${oss ? '-oss' : ''}"
-    if (type == 'deb') {
-      if (architecture == 'x64') {
-        arch('amd64')
-      } else {
-        assert architecture == 'aarch64' : architecture
-        arch('arm64')
-      }
-    } else {
-      assert type == 'rpm' : type
-      if (architecture == 'x64') {
-        arch('X86_64')
-      } else {
-        assert architecture == 'aarch64' : architecture
-        arch('aarch64')
-      }
-    }
+    arch('noarch')
     // Follow elasticsearch's file naming convention
     String jdkString = jdk ? "" : "no-jdk-"
-    String prefix = "${architecture == 'aarch64' ? 'aarch64-' : ''}${oss ? 'oss-' : ''}${jdk ? '' : 'no-jdk-'}${type}"
+    String prefix = "${architecture != 'x64' ? architecture + '-' : ''}${oss ? 'oss-' : ''}${jdk ? '' : 'no-jdk-'}${type}"
     destinationDirectory = file("${prefix}/build/distributions")
 
     // SystemPackagingTask overrides default archive task convention mappings, but doesn't provide a setter so we have to override the convention mapping itself
@@ -367,6 +352,10 @@ tasks.register('buildOssDeb', Deb) {
   configure(commonDebConfig(true, true, 'x64'))
 }
 
+tasks.register('buildPpc64leOssDeb', Deb) {
+  configure(commonDebConfig(true, true, 'ppc64le'))
+}
+
 tasks.register('buildNoJdkDeb', Deb) {
   configure(commonDebConfig(false, false, 'x64'))
 }
@@ -418,6 +407,10 @@ tasks.register('buildAarch64OssRpm', Rpm) {
 
 tasks.register('buildOssRpm', Rpm) {
   configure(commonRpmConfig(true, true, 'x64'))
+}
+
+tasks.register('buildPpc64leOssRpm', Rpm) {
+  configure(commonRpmConfig(true, true, 'ppc64le'))
 }
 
 tasks.register('buildNoJdkRpm', Rpm) {

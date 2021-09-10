@@ -79,10 +79,8 @@ processResources {
   String licenseKey = System.getProperty("license.key")
   if (licenseKey != null) {
     println "Using provided license key from ${licenseKey}"
-  } else if (BuildParams.isSnapshotBuild()) {
-    licenseKey = Paths.get(project.projectDir.path, 'snapshot.key')
   } else {
-    throw new IllegalArgumentException('Property license.key must be set for release build')
+    licenseKey = Paths.get(project.projectDir.path, 'snapshot.key')
   }
   if (Files.exists(Paths.get(licenseKey)) == false) {
     throw new IllegalArgumentException('license.key at specified path [' + licenseKey + '] does not exist')

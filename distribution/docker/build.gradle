@@ -32,6 +32,8 @@ ext.expansions = { Architecture architecture, boolean oss, DockerBase base, bool
   if (local) {
     if (architecture == Architecture.AARCH64) {
       classifier = "linux-aarch64"
+    } else if (architecture == Architecture.PPC64LE) {
+      classifier = "linux-aarch64"
     } else if (architecture == Architecture.X64) {
       classifier = "linux-x86_64"
     } else {
@@ -75,7 +77,8 @@ RUN curl --retry 8 -S -L \\
 
 private static String buildPath(Architecture architecture, boolean oss, DockerBase base) {
   return 'build/' +
-    (architecture == Architecture.AARCH64 ? 'aarch64-' : '') +
+//    (architecture == Architecture.AARCH64 ? 'aarch64-' : '') +
+    (architecture != Architecture.X64 ? (architecture.name() + '-') : '') +
     (oss ? 'oss-' : '') +
     (base == DockerBase.UBI ? 'ubi-' : '') +
     'docker'
@@ -83,7 +86,8 @@ private static String buildPath(Architecture architecture, boolean oss, DockerBa
 
 private static String taskName(String prefix, Architecture architecture, boolean oss, DockerBase base, String suffix) {
   return prefix +
-    (architecture == Architecture.AARCH64 ? 'Aarch64' : '') +
+//    (architecture == Architecture.AARCH64 ? 'Aarch64' : '') +
+    (architecture != Architecture.X64 ? architecture.name().capitalize() : '') +
     (oss ? 'Oss' : '') +
     (base == DockerBase.UBI ? 'Ubi' : '') +
     suffix

@@ -31,55 +31,15 @@ fi
 
 # extract and patch build files
 cd $EXEC_PATH # make sure we're in the right directory
-cd elasticsearch
 
-# trigger download of custom jna library to cache
-./gradlew :distribution:archives:oss-no-jdk-linux-tar:assemble
-rm -rf distribution/archives/oss-no-jdk-linux-tar/build
-
-# download jna
-echo "Cloning jna-${JNAVERS}"
-cd ${EXEC_PATH} # make sure we're in the right directory
-git clone https://github.com/java-native-access/jna.git
-cd jna
-git checkout ${JNAVERS}
-
-# fix cached jna library
-JAR_FIND=$( find ${CACHE_DIR} -name ${JAR_NAME} | grep "org.elasticsearch" )
-JAR_PATH=$( dirname ${JAR_FIND} )
-cd ${JAR_PATH}
-mkdir tmp
-cd tmp
-echo "Extract contents from ${JAR_NAME}"
-jar xvf ../${JAR_NAME}
-mv ../${JAR_NAME} ../${JAR_NAME}.old
-cd com/sun/jna
-mkdir linux-ppc64le
-cd linux-ppc64le
-echo "Adding native support for ppc64le"
-jar xvf ${EXEC_PATH}/jna/dist/linux-ppc64le.jar
-rm -rf META-INF/
-cd ${JAR_PATH}/tmp
-echo "Repacking ${JAR_NAME}"
-jar cvf ../${JAR_NAME} .
-cd ..
-rm -rf tmp
+# replace jna library on gradle cache
+./build-jna.sh
 
 # main block
 cd $EXEC_PATH # make sure we're in the right directory
-cd elasticsearch
 ./gradlew :distribution:packages:oss-no-jdk-rpm:assemble
 #./gradlew -Dbuild.snapshot=false :distribution:packages:oss-no-jdk-rpm:assemble
 
 # save build artifacts
-IFS=","
-for i in "${ARTIFACTS[@]}"
-do
-  set -- $i
-  if [ -f "$1" ]; then
-    echo Copying $1 to $OUTPUT_PATH/$2/$3
-    sudo mkdir -p $OUTPUT_PATH/$2
-    sudo \cp $1 $OUTPUT_PATH/$2/$3
-  fi
-done
+./build-save.sh
 
